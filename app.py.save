@@ -1,0 +1,890 @@
+import streamlit as st
+import tensorflow as tf
+import numpy as np
+from PIL import Image
+import os
+import glob
+
+# ============================================================
+# PAGE CONFIG
+# ============================================================
+
+st.set_page_config(
+    page_title="FingerBlood AI | Aryan Tripathi",
+    page_icon="🩸",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# ============================================================
+# CUSTOM CSS
+# ============================================================
+
+st.markdown("""
+<style>
+
+    /* ---------- MAIN PAGE ---------- */
+
+    .stApp {
+        background:
+            radial-gradient(circle at 10% 10%, rgba(99,102,241,0.14), transparent 30%),
+            radial-gradient(circle at 90% 20%, rgba(220,38,38,0.10), transparent 30%),
+            #080b14;
+        color: #f8fafc;
+    }
+
+    .main .block-container {
+        max-width: 1200px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+    }
+
+    /* ---------- HERO ---------- */
+
+    .hero {
+        text-align: center;
+        padding: 55px 30px 45px 30px;
+        margin-bottom: 35px;
+        border-radius: 28px;
+        background:
+            linear-gradient(
+                135deg,
+                rgba(30,41,59,0.90),
+                rgba(15,23,42,0.85)
+            );
+        border: 1px solid rgba(148,163,184,0.15);
+        box-shadow:
+            0 25px 80px rgba(0,0,0,0.35),
+            inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .hero-icon {
+        font-size: 65px;
+        margin-bottom: 8px;
+    }
+
+    .hero-title {
+        font-size: 58px;
+        font-weight: 800;
+        letter-spacing: -2px;
+        margin-bottom: 8px;
+        background: linear-gradient(
+            90deg,
+            #ffffff,
+            #c7d2fe,
+            #fca5a5
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+        font-size: 20px;
+        color: #cbd5e1;
+        line-height: 1.7;
+    }
+
+    .developer {
+        color: #f87171;
+        font-weight: 700;
+    }
+
+    /* ---------- SECTION TITLE ---------- */
+
+    .section-title {
+        font-size: 27px;
+        font-weight: 750;
+        margin-top: 25px;
+        margin-bottom: 18px;
+        color: #f8fafc;
+    }
+
+    /* ---------- CARDS ---------- */
+
+    .card {
+        background: rgba(15,23,42,0.78);
+        border: 1px solid rgba(148,163,184,0.14);
+        border-radius: 22px;
+        padding: 28px;
+        margin-bottom: 22px;
+        box-shadow: 0 15px 45px rgba(0,0,0,0.20);
+    }
+
+    .card-title {
+        font-size: 21px;
+        font-weight: 700;
+        margin-bottom: 14px;
+        color: #f8fafc;
+    }
+
+    .card-text {
+        color: #cbd5e1;
+        line-height: 1.8;
+        font-size: 16px;
+    }
+
+    /* ---------- RESULT ---------- */
+
+    .result-card {
+        background:
+            linear-gradient(
+                135deg,
+                rgba(127,29,29,0.30),
+                rgba(30,41,59,0.75)
+            );
+        border: 1px solid rgba(248,113,113,0.30);
+        border-radius: 25px;
+        padding: 35px;
+        text-align: center;
+        margin-top: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.30);
+    }
+
+    .result-label {
+        color: #94a3b8;
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .blood-group {
+        font-size: 65px;
+        font-weight: 900;
+        color: #f87171;
+        margin: 5px 0;
+    }
+
+    .confidence {
+        font-size: 21px;
+        color: #e2e8f0;
+    }
+
+    /* ---------- INFO BOXES ---------- */
+
+    .info-box {
+        text-align: center;
+        background: rgba(15,23,42,0.75);
+        border: 1px solid rgba(148,163,184,0.13);
+        border-radius: 18px;
+        padding: 22px 12px;
+        min-height: 120px;
+    }
+
+    .info-number {
+        font-size: 30px;
+        font-weight: 800;
+        color: #f8fafc;
+    }
+
+    .info-label {
+        color: #94a3b8;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+    /* ---------- TECHNOLOGY BADGES ---------- */
+
+    .tech-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .tech {
+        padding: 8px 15px;
+        border-radius: 999px;
+        background: rgba(99,102,241,0.12);
+        border: 1px solid rgba(129,140,248,0.25);
+        color: #c7d2fe;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* ---------- FOOTER ---------- */
+
+    .footer {
+        text-align: center;
+        padding: 35px 20px 10px;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .footer-name {
+        color: #f87171;
+        font-weight: 700;
+    }
+
+    /* ---------- STREAMLIT UPLOADER ---------- */
+
+    [data-testid="stFileUploader"] {
+        background: rgba(15,23,42,0.70);
+        border-radius: 20px;
+        padding: 15px;
+        border: 1px dashed rgba(148,163,184,0.30);
+    }
+
+    /* ---------- BUTTON ---------- */
+
+    .stButton > button {
+        width: 100%;
+        border-radius: 12px;
+        border: none;
+        padding: 12px 20px;
+        font-weight: 700;
+    }
+
+    /* ---------- MOBILE ---------- */
+
+    @media (max-width: 768px) {
+
+        .hero-title {
+            font-size: 40px;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+        }
+
+        .blood-group {
+            font-size: 50px;
+        }
+    }
+
+</style>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# MODEL FINDER
+# ============================================================
+
+@st.cache_resource
+def find_model():
+
+    possible_extensions = [
+        "*.h5",
+        "*.keras",
+        "*.hdf5"
+    ]
+
+    model_files = []
+
+    for extension in possible_extensions:
+        model_files.extend(
+            glob.glob(
+                os.path.join(
+                    os.getcwd(),
+                    "**",
+                    extension
+                ),
+                recursive=True
+            )
+        )
+
+    if not model_files:
+        return None, None
+
+    # Prefer common model names
+    preferred = [
+        "blood_group_model.h5",
+        "model.h5",
+        "cnn_model.h5",
+        "fingerblood_model.h5",
+        "blood_model.h5"
+    ]
+
+    for name in preferred:
+
+        for path in model_files:
+
+            if os.path.basename(path).lower() == name.lower():
+                return tf.keras.models.load_model(path), path
+
+    # Otherwise use first model found
+    model_path = model_files[0]
+
+    model = tf.keras.models.load_model(model_path)
+
+    return model, model_path
+
+
+# ============================================================
+# LOAD MODEL
+# ============================================================
+
+try:
+
+    model, model_path = find_model()
+
+except Exception as e:
+
+    model = None
+    model_path = None
+
+# ============================================================
+# CLASS NAMES
+# ============================================================
+
+CLASS_NAMES = [
+    "A+",
+    "A-",
+    "AB+",
+    "AB-",
+    "B+",
+    "B-",
+    "O+",
+    "O-"
+]
+
+
+# ============================================================
+# IMAGE PREPROCESSING
+# ============================================================
+
+def preprocess_image(image):
+
+    # Convert to grayscale
+    image = image.convert("L")
+
+    # Resize to model size
+    image = image.resize((128, 128))
+
+    # Convert to numpy
+    image_array = np.array(image)
+
+    # Normalize
+    image_array = image_array.astype("float32") / 255.0
+
+    # Check model input shape
+    if model is not None:
+
+        input_shape = model.input_shape
+
+        # Example:
+        # (None, 128, 128)
+        if len(input_shape) == 3:
+            image_array = np.expand_dims(
+                image_array,
+                axis=0
+            )
+
+        # Example:
+        # (None, 128, 128, 1)
+        elif len(input_shape) == 4:
+            image_array = np.expand_dims(
+                image_array,
+                axis=-1
+            )
+
+            image_array = np.expand_dims(
+                image_array,
+                axis=0
+            )
+
+        else:
+            image_array = np.expand_dims(
+                image_array,
+                axis=0
+            )
+
+    return image_array
+
+
+# ============================================================
+# PREDICTION
+# ============================================================
+
+def predict_blood_group(image):
+
+    processed = preprocess_image(image)
+
+    predictions = model.predict(
+        processed,
+        verbose=0
+    )
+
+    probabilities = predictions[0]
+
+    predicted_index = np.argmax(probabilities)
+
+    predicted_class = CLASS_NAMES[predicted_index]
+
+    confidence = probabilities[predicted_index] * 100
+
+    return predicted_class, confidence, probabilities
+
+
+# ============================================================
+# HERO
+# ============================================================
+
+st.markdown("""
+<div class="hero">
+
+    <div class="hero-icon">🩸</div>
+
+    <div class="hero-title">
+        FingerBlood AI
+    </div>
+
+    <div class="hero-subtitle">
+
+        Fingerprint-Based Blood Group Classification
+        <br>
+
+        Powered by <b>Convolutional Neural Networks</b>
+        <br>
+
+        Developed by
+        <span class="developer">
+            Aryan Tripathi
+        </span>
+
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# PROJECT INTRO
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">🔬 About the Project</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown("""
+<div class="card">
+
+    <div class="card-title">
+        🧠 FingerBlood AI
+    </div>
+
+    <div class="card-text">
+
+        FingerBlood AI is a computer vision and machine learning
+        project that analyzes fingerprint images and uses a
+        Convolutional Neural Network (CNN) to classify them into
+        eight blood-group categories.
+
+        <br><br>
+
+        The system supports:
+
+        <b>A+, A-, AB+, AB-, B+, B-, O+, O-</b>
+
+        <br><br>
+
+        Upload a fingerprint image below and the trained model
+        will generate a predicted blood group along with the
+        probability distribution across all eight classes.
+
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# PROJECT STATS
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">📊 Model Overview</div>',
+    unsafe_allow_html=True
+)
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown("""
+    <div class="info-box">
+        <div class="info-number">86.62%</div>
+        <div class="info-label">Test Accuracy</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class="info-box">
+        <div class="info-number">8</div>
+        <div class="info-label">Blood Groups</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <div class="info-box">
+        <div class="info-number">128×128</div>
+        <div class="info-label">Input Image</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown("""
+    <div class="info-box">
+        <div class="info-number">CNN</div>
+        <div class="info-label">Deep Learning</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ============================================================
+# UPLOAD SECTION
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">📤 Upload Fingerprint</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown("""
+<div class="card-text" style="margin-bottom:15px;">
+    Upload a fingerprint image in JPG, JPEG or PNG format.
+</div>
+""", unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader(
+    "Choose a fingerprint image",
+    type=["jpg", "jpeg", "png", "bmp"],
+    label_visibility="collapsed"
+)
+
+
+# ============================================================
+# MODEL NOT FOUND
+# ============================================================
+
+if model is None:
+
+    st.error(
+        "⚠️ No trained model found. "
+        "Make sure your .h5 or .keras model is inside the "
+        "FingerBlood project folder."
+    )
+
+    st.info("""
+    Example:
+
+    FingerBlood/
+    ├── app.py
+    ├── model/
+    │   └── model.h5
+    ├── dataset_raw/
+    └── src/
+    """)
+
+    st.stop()
+
+
+# ============================================================
+# PREDICTION SECTION
+# ============================================================
+
+if uploaded_file is not None:
+
+    image = Image.open(uploaded_file)
+
+    st.markdown(
+        '<div class="section-title">🖼️ Uploaded Fingerprint</div>',
+        unsafe_allow_html=True
+    )
+
+    image_col, result_col = st.columns(
+        [1, 1],
+        gap="large"
+    )
+
+    # --------------------------------------------------------
+    # IMAGE
+    # --------------------------------------------------------
+
+    with image_col:
+
+        st.image(
+            image,
+            caption="Uploaded Fingerprint",
+            use_container_width=True
+        )
+
+    # --------------------------------------------------------
+    # PREDICTION
+    # --------------------------------------------------------
+
+    with result_col:
+
+        with st.spinner("Analyzing fingerprint..."):
+
+            try:
+
+                predicted_class, confidence, probabilities = \
+                    predict_blood_group(image)
+
+                st.markdown(f"""
+                <div class="result-card">
+
+                    <div class="result-label">
+                        PREDICTED BLOOD GROUP
+                    </div>
+
+                    <div class="blood-group">
+                        {predicted_class}
+                    </div>
+
+                    <div class="confidence">
+                        Model Confidence:
+                        <b>{confidence:.2f}%</b>
+                    </div>
+
+                </div>
+                """, unsafe_allow_html=True)
+
+            except Exception as e:
+
+                st.error(
+                    f"Prediction failed: {str(e)}"
+                )
+
+                st.stop()
+
+
+    # ========================================================
+    # PROBABILITY DISTRIBUTION
+    # ========================================================
+
+    st.markdown(
+        '<div class="section-title">📈 Prediction Probabilities</div>',
+        unsafe_allow_html=True
+    )
+
+    probability_dict = {
+        CLASS_NAMES[i]: float(probabilities[i]) * 100
+        for i in range(len(CLASS_NAMES))
+    }
+
+    # Sort highest to lowest
+    sorted_probabilities = dict(
+        sorted(
+            probability_dict.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+    )
+
+    st.bar_chart(
+        sorted_probabilities,
+        horizontal=True
+    )
+
+    # Detailed probability table
+
+    st.markdown(
+        '<div class="section-title">🔎 Detailed Results</div>',
+        unsafe_allow_html=True
+    )
+
+    for blood_group, probability in sorted_probabilities.items():
+
+        col_a, col_b = st.columns(
+            [1, 5]
+        )
+
+        with col_a:
+
+            st.write(
+                f"**{blood_group}**"
+            )
+
+        with col_b:
+
+            st.progress(
+                min(
+                    probability / 100,                    1.0
+                )
+            )
+
+            st.caption(
+                f"{probability:.2f}%"
+            )
+
+
+# ============================================================
+# TECHNOLOGIES
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">🛠️ Technologies Used</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown("""
+<div class="card">
+
+    <div class="tech-container">
+
+        <span class="tech">Python</span>
+
+        <span class="tech">TensorFlow</span>
+
+        <span class="tech">Keras</span>
+
+        <span class="tech">CNN</span>
+
+        <span class="tech">OpenCV</span>
+
+        <span class="tech">NumPy</span>
+
+        <span class="tech">Pillow</span>
+
+        <span class="tech">Streamlit</span>
+
+        <span class="tech">Machine Learning</span>
+
+        <span class="tech">Computer Vision</span>
+
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# HOW IT WORKS
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">⚙️ How It Works</div>',
+    unsafe_allow_html=True
+)
+
+step1, step2, step3, step4 = st.columns(4)
+
+with step1:
+
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">1️⃣ Upload</div>
+        <div class="card-text">
+            Upload a fingerprint image.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with step2:
+
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">2️⃣ Process</div>
+        <div class="card-text">
+            Image is resized and normalized.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with step3:
+
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">3️⃣ CNN</div>
+        <div class="card-text">
+            CNN extracts fingerprint features.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with step4:
+
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">4️⃣ Predict</div>
+        <div class="card-text">
+            Model predicts the blood group.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ============================================================
+# MODEL INFORMATION
+# ============================================================
+
+st.markdown(
+    '<div class="section-title">🤖 Model Information</div>',
+    unsafe_allow_html=True
+)
+
+model_name = (
+    os.path.basename(model_path)
+    if model_path
+    else "Not detected"
+)
+
+st.markdown(f"""
+<div class="card">
+
+    <div class="card-text">
+
+        <b>Architecture:</b> Convolutional Neural Network (CNN)
+
+        <br><br>
+
+        <b>Input:</b> 128 × 128 fingerprint image
+
+        <br><br>
+
+        <b>Classes:</b> 8 blood groups
+
+        <br><br>
+
+        <b>Test Accuracy:</b> 86.62%
+
+        <br><br>
+
+        <b>Model File:</b> {model_name}
+
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
+
+
+# ============================================================
+# DISCLAIMER
+# ============================================================
+
+st.warning("""
+⚠️ **Project / Educational Use**
+
+This application is an academic machine-learning project and
+should not be used as a medical diagnostic tool. Blood groups
+should be confirmed using clinically validated laboratory
+testing.
+""")
+
+
+# ============================================================
+# FOOTER
+# ============================================================
+
+st.markdown("""
+<div class="footer">
+
+    🩸 <b>FingerBlood AI</b>
+
+6xx    <br><br>
+
+    Built with Python • TensorFlow • CNN • Streamlit
+
+    <br>    Developed by
+    <span class="footer-name">
+        Aryan Tripathi
+    </span>
+
+    <br><br>
+
+    © 2026 FingerBlood AI
+
+</div>
+""", 
