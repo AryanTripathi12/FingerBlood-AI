@@ -6,7 +6,7 @@ FingerBlood AI is a computer vision and deep learning project that analyzes fing
 
 ## 🚀 Live Demo
 
-👉 **[Open FingerBlood AI Live App](YOUR_STREAMLIT_URL)**
+👉 **[Open FingerBlood AI Live App](https://fingerblood-ai-3wq7zbmkpn5a7yjtypiwuh.streamlit.app/)**
 
 The application is deployed using **Streamlit Community Cloud** and can be accessed directly from a web browser without installing the project locally.
 
