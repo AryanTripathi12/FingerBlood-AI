@@ -4,6 +4,12 @@
 
 FingerBlood AI is a computer vision and deep learning project that analyzes fingerprint images and classifies them into eight blood-group categories using a Convolutional Neural Network (CNN).
 
+## 🚀 Live Demo
+
+👉 **[Open FingerBlood AI Live App](YOUR_STREAMLIT_URL)**
+
+The application is deployed using **Streamlit Community Cloud** and can be accessed directly from a web browser without installing the project locally.
+
 ## 🚀 Project Overview
 
 The application provides a Streamlit-based web interface where users can upload a fingerprint image and receive a predicted blood-group class along with prediction probabilities.
@@ -21,12 +27,12 @@ The application provides a Streamlit-based web interface where users can upload 
 
 ## 📊 Model Performance
 
-| Metric | Value |
-|---|---:|
-| Test Accuracy | **86.62%** |
+| Metric            | Value |
+| ----------------- | ----: |
+| Test Accuracy     | **86.62%** |
 | Number of Classes | **8** |
-| Input Image Size | **128 × 128** |
-| Model | **CNN** |
+| Input Image Size  | **128 × 128** |
+| Model             | **CNN** |
 
 ## 🧠 Model Evaluation
 
@@ -54,6 +60,7 @@ The test-set results showed an overall accuracy of approximately **87%** on 598 
 - 📈 Probability distribution
 - 📋 Model evaluation and confusion matrix
 - 🌐 Streamlit web interface
+- 🚀 Live web deployment
 
 ## 📁 Project Structure
 
@@ -65,16 +72,20 @@ FingerBlood-AI/
 │   └── predict.py
 │
 ├── model/
-│   └── model.keras
+│   ├── model.keras
+│   └── confusion_matrix.png
 │
 ├── dataset_raw/
+│
+├── screenshots/
+│   └── fingerblood-ui.png
 │
 ├── requirements.txt
 ├── README.md
 └── .gitignore
 ```
 
-## ▶️ Run the Application
+## ▶️ Run the Application Locally
 
 Clone the repository:
 
@@ -108,6 +119,15 @@ The application will open at:
 http://localhost:8501
 ```
 
+## 🌐 Deployment
+
+The application is deployed using **Streamlit Community Cloud**.
+
+### Links
+
+- 🚀 **Live Demo:** [Open FingerBlood AI](YOUR_STREAMLIT_URL)
+- 🐙 **GitHub Repository:** [FingerBlood-AI](https://github.com/AryanTripathi12/FingerBlood-AI)
+
 ## 👨‍💻 Developer
 
 **Aryan Tripathi**
@@ -115,7 +135,7 @@ http://localhost:8501
 B.Tech CSE — AI & ML
 
 GitHub:  
-https://github.com/AryanTripathi12
+[https://github.com/AryanTripathi12](https://github.com/AryanTripathi12)
 
 ## ⚠️ Disclaimer
 
